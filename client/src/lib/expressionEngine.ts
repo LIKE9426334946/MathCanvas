@@ -156,13 +156,19 @@ export const buildSeries = (config: FunctionConfig, parameters: ParameterValues)
     return points;
   }
 
-  const count = Math.max(config.sampleCount, 20);
-  const step = (config.xMax - config.xMin) / (count - 1);
-  for (let index = 0; index < count; index += 1) {
-    const x = config.xMin + step * index;
+  const ticksPerUnit = 10;
+  const firstTick = Math.ceil(config.xMin * ticksPerUnit - 1e-9);
+  const lastTick = Math.floor(config.xMax * ticksPerUnit + 1e-9);
+  const availableTicks = Math.max(0, lastTick - firstTick + 1);
+  const maximumPoints = Math.max(config.sampleCount, 20);
+  const tickStride = Math.max(1, Math.ceil(availableTicks / maximumPoints));
+  const alignedFirstTick = Math.ceil(firstTick / tickStride) * tickStride;
+
+  for (let tick = alignedFirstTick; tick <= lastTick; tick += tickStride) {
+    const x = tick / ticksPerUnit;
     const y = evaluate(x, parameters);
     const clipped = y !== null && Math.abs(y) > 1e10 ? null : y;
-    points.push([Number(x.toPrecision(12)), clipped]);
+    points.push([x, clipped]);
   }
   return points;
 };
