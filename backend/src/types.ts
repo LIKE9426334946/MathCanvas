@@ -1,5 +1,13 @@
 export type ChartType = 'line' | 'bar';
 
+export interface Directory {
+  id: string;
+  name: string;
+  functionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FunctionParameter {
   name: string;
   label: string;

@@ -6,15 +6,19 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ZodError } from 'zod';
 import {
+  createDirectory,
   createFunction,
+  deleteDirectory,
   deleteFunction,
   getFunctionById,
   getFunctionBySlug,
   importFunctions,
+  listDirectories,
   listFunctions,
+  updateDirectory,
   updateFunction,
 } from './database.js';
-import { functionInputSchema, importSchema } from './validation.js';
+import { directoryInputSchema, functionInputSchema, importSchema } from './validation.js';
 
 const app = express();
 const host = process.env.HOST ?? '127.0.0.1';
@@ -26,6 +30,28 @@ app.use(express.json({ limit: '2mb' }));
 
 app.get('/api/health', (_request, response) => {
   response.json({ status: 'ok', service: 'MathCanvas' });
+});
+
+app.get('/api/directories', (_request, response) => {
+  response.json(listDirectories());
+});
+
+app.post('/api/directories', (request, response) => {
+  const input = directoryInputSchema.parse(request.body);
+  response.status(201).json(createDirectory(input.name));
+});
+
+app.put('/api/directories/:id', (request, response) => {
+  const input = directoryInputSchema.parse(request.body);
+  const updated = updateDirectory(request.params.id, input.name);
+  if (!updated) return response.status(404).json({ message: '没有找到这个目录' });
+  response.json(updated);
+});
+
+app.delete('/api/directories/:id', (request, response) => {
+  const result = deleteDirectory(request.params.id);
+  if (!result) return response.status(404).json({ message: '没有找到这个目录' });
+  response.json(result);
 });
 
 app.get('/api/functions', (request, response) => {
@@ -63,15 +89,16 @@ app.delete('/api/functions/:id', (request, response) => {
 app.get('/api/config/export', (_request, response) => {
   response.setHeader('Content-Disposition', 'attachment; filename="mathcanvas-functions.json"');
   response.json({
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
+    directories: listDirectories().map(({ name }) => ({ name })),
     functions: listFunctions(),
   });
 });
 
 app.post('/api/config/import', (request, response) => {
   const input = importSchema.parse(request.body);
-  response.json({ imported: input.functions.length, functions: importFunctions(input.functions, input.mode) });
+  response.json({ imported: input.functions.length, functions: importFunctions(input.functions, input.mode, input.directories) });
 });
 
 app.use('/api', (_request, response) => {
@@ -92,6 +119,12 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
   }
   if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
     return response.status(409).json({ message: '这个页面标识已经存在，请换一个 slug' });
+  }
+  if (error instanceof Error && error.message === 'DIRECTORY_EXISTS') {
+    return response.status(409).json({ message: '这个目录名称已经存在' });
+  }
+  if (error instanceof Error && error.message === 'DEFAULT_DIRECTORY') {
+    return response.status(400).json({ message: 'Uncategorized 是系统保留目录，不能删除' });
   }
   console.error(error);
   response.status(500).json({ message: '服务器处理请求时出现错误' });

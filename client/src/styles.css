@@ -12,8 +12,8 @@
 :root.dark { color-scheme: dark; }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; }
+html { max-width: 100%; overflow-x: hidden; scroll-behavior: smooth; }
+body, #root { margin: 0; min-width: 320px; max-width: 100%; min-height: 100vh; overflow-x: hidden; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 
@@ -99,7 +99,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .admin-field > input,
   .admin-field > textarea,
   .admin-field > select {
-    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-canvas-400 focus:bg-white focus:ring-4 focus:ring-canvas-500/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:focus:border-canvas-500 dark:focus:bg-black/10;
+    @apply min-w-0 w-full max-w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-canvas-400 focus:bg-white focus:ring-4 focus:ring-canvas-500/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:focus:border-canvas-500 dark:focus:bg-black/10;
   }
 
   .admin-field > small {

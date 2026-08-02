@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+export const directoryInputSchema = z.object({
+  name: z.string().trim().min(1, '目录名称不能为空').max(60),
+});
+
 const parameterSchema = z.object({
   name: z.string().regex(/^[A-Za-z][A-Za-z0-9_]*$/, '参数名必须以英文字母开头'),
   label: z.string().min(1).max(20),
@@ -47,5 +51,6 @@ export const functionInputSchema = z.object({
 
 export const importSchema = z.object({
   mode: z.enum(['merge', 'replace']).default('merge'),
+  directories: z.array(directoryInputSchema).max(100).optional(),
   functions: z.array(functionInputSchema).min(1).max(500),
 });
