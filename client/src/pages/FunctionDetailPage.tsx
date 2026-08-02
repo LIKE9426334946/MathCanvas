@@ -37,14 +37,14 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-4 pb-24 pt-5 sm:px-6 sm:pt-8 lg:px-8">
+    <main className="mx-auto max-w-7xl px-4 pb-24 pt-4 sm:px-6 sm:pt-8 lg:px-8">
       <Link to="/" className="inline-flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white">
         <ArrowLeft size={18} /> 返回函数库
       </Link>
 
-      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(330px,.75fr)]">
-        <section className="min-w-0 space-y-5">
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:p-7">
+      <div className="mt-3 grid items-start gap-4 sm:mt-5 sm:gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(330px,.75fr)]">
+        <section className="flex min-w-0 flex-col gap-3 sm:gap-5">
+          <div className="order-1 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <span className="inline-flex rounded-full bg-canvas-100 px-3 py-1 text-xs font-bold text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100">{config.category}</span>
@@ -66,17 +66,17 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
             )}
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-2 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:p-4">
-            <FunctionChart config={config} values={resolvedValues} />
-          </div>
-
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-6 dark:border-white/10 dark:bg-white/[0.045]">
+          <div className="order-2 rounded-3xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-white/[0.045] sm:p-6 lg:order-3">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">关于这个函数</h2>
-            <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">{config.description}</p>
-            <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-black/20">
+            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-base sm:leading-7">{config.description}</p>
+            <div className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-black/20 sm:mt-4">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Expression</span>
               <code className="mt-1 block overflow-x-auto whitespace-nowrap text-sm font-semibold text-canvas-700 dark:text-canvas-100">{config.expression}</code>
             </div>
+          </div>
+
+          <div className="order-3 -mx-2 overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-1 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:mx-0 sm:p-4 lg:order-2">
+            <FunctionChart config={config} values={resolvedValues} />
           </div>
         </section>
 
