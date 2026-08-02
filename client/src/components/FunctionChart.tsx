@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { AlertTriangle } from 'lucide-react';
 import { buildSeries } from '../lib/expressionEngine';
@@ -17,6 +17,15 @@ const formatNumber = (value: number) => {
 
 export const FunctionChart = ({ config, values, compact = false }: FunctionChartProps) => {
   const isDark = document.documentElement.classList.contains('dark');
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)');
+    const updateLayout = () => setIsMobile(media.matches);
+    media.addEventListener('change', updateLayout);
+    return () => media.removeEventListener('change', updateLayout);
+  }, []);
+
   const result = useMemo(() => {
     try {
       return { points: buildSeries(config, values), error: '' };
@@ -28,7 +37,12 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
   const option = useMemo(() => ({
     animationDuration: 220,
     animationEasing: 'cubicOut',
-    grid: { left: compact ? 46 : 56, right: compact ? 18 : 28, top: compact ? 22 : 28, bottom: compact ? 38 : 48 },
+    grid: {
+      left: compact ? 46 : isMobile ? 44 : 56,
+      right: compact ? 18 : isMobile ? 10 : 28,
+      top: compact ? 22 : isMobile ? 14 : 28,
+      bottom: compact ? 38 : isMobile ? 34 : 48,
+    },
     tooltip: {
       trigger: 'axis',
       backgroundColor: isDark ? '#252338' : '#ffffff',
@@ -77,7 +91,7 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
       } : undefined,
       barMaxWidth: 26,
     }],
-  }), [compact, config, isDark, result.points]);
+  }), [compact, config, isDark, isMobile, result.points]);
 
   if (result.error) {
     return (
@@ -91,5 +105,5 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
     );
   }
 
-  return <ReactECharts option={option} notMerge lazyUpdate style={{ height: compact ? 300 : 390, width: '100%' }} />;
+  return <ReactECharts option={option} notMerge lazyUpdate style={{ height: compact ? 300 : isMobile ? 310 : 390, width: '100%' }} />;
 };
