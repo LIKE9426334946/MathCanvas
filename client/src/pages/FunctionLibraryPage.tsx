@@ -2,17 +2,20 @@ import {
   Activity,
   Atom,
   BrainCircuit,
+  ChevronDown,
   ChevronRight,
+  FolderTree,
   FunctionSquare,
   Search,
   Sparkles,
   Waves,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingState } from '../components/LoadingState';
-import type { FunctionConfig } from '../types';
+import { api } from '../lib/api';
+import type { Directory, FunctionConfig } from '../types';
 
 interface LibraryProps {
   functions: FunctionConfig[];
@@ -39,6 +42,20 @@ const categoryMeta: Record<string, { icon: typeof Activity; color: string; descr
 export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps) => {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('全部');
+  const [directories, setDirectories] = useState<Directory[]>([]);
+  const [mobileDirectory, setMobileDirectory] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    void api.listDirectories()
+      .then((items) => {
+        if (active) setDirectories(items);
+      })
+      .catch(() => {
+        // The function categories below remain a complete fallback if this request fails.
+      });
+    return () => { active = false; };
+  }, []);
 
   const categories = useMemo(() => {
     const unique = [...new Set(functions.map((item) => item.category))];
@@ -65,9 +82,98 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
     .map((name) => ({ name, items: visibleFunctions.filter((item) => item.category === name) }))
     .filter((group) => group.items.length > 0), [categories, visibleFunctions]);
 
+  const mobileGroups = useMemo(() => {
+    const names = directories.length > 0
+      ? directories.map((item) => item.name)
+      : categories;
+    return [...new Set(names)]
+      .sort((a, b) => {
+        const aIndex = categoryOrder.indexOf(a);
+        const bIndex = categoryOrder.indexOf(b);
+        if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+      })
+      .map((name) => ({ name, items: functions.filter((item) => item.category === name) }));
+  }, [categories, directories, functions]);
+
+  const activeMobileDirectory = mobileGroups.some((group) => group.name === mobileDirectory)
+    ? mobileDirectory
+    : (mobileGroups[0]?.name ?? '');
+
   return (
-    <main className="pb-20">
-      <section className="relative overflow-hidden border-b border-slate-200/70 dark:border-white/10">
+    <main className="overflow-x-hidden pb-20">
+      <section className="border-b border-slate-200/70 bg-white/60 dark:border-white/10 dark:bg-white/[0.025] md:hidden">
+        <div className="mx-auto max-w-lg px-3 py-4">
+          <div className="mb-3 flex items-center gap-2 px-1">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-canvas-100 text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100">
+              <FolderTree size={18} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-slate-900 dark:text-white">函数目录</h1>
+              <p className="text-xs text-slate-400">选择目录，再选择函数</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid min-h-40 place-items-center text-sm text-slate-400">正在加载函数目录…</div>
+          ) : error ? (
+            <div className="rounded-2xl border border-dashed border-rose-200 px-4 py-8 text-center text-sm text-rose-500 dark:border-rose-500/20 dark:text-rose-300">{error}</div>
+          ) : mobileGroups.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400 dark:border-white/10">这里还没有目录</div>
+          ) : (
+            <nav
+              aria-label="函数目录"
+              className="max-h-[calc(100dvh-9rem)] touch-pan-y space-y-1 overflow-y-auto overflow-x-hidden overscroll-contain rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-sm dark:border-white/10 dark:bg-white/[0.035]"
+            >
+              {mobileGroups.map((group) => {
+                const expanded = activeMobileDirectory === group.name;
+                return (
+                  <div key={group.name} className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setMobileDirectory(group.name)}
+                      aria-expanded={expanded}
+                      className={`flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl px-3 text-left text-sm font-bold transition-colors ${
+                        expanded
+                          ? 'bg-canvas-100 text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100'
+                          : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <ChevronDown size={16} className={`shrink-0 transition-transform ${expanded ? '' : '-rotate-90'}`} />
+                      <span className="min-w-0 flex-1 truncate">{group.name}</span>
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] tabular-nums ${
+                        expanded
+                          ? 'bg-white/70 text-canvas-600 dark:bg-white/10 dark:text-canvas-100'
+                          : 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500'
+                      }`}>{group.items.length}</span>
+                    </button>
+
+                    {expanded && (
+                      <div className="ml-5 border-l border-canvas-200 py-1 pl-2 dark:border-canvas-500/20">
+                        {group.items.length > 0 ? group.items.map((item) => (
+                          <Link
+                            key={item.id}
+                            to={`/function/${item.slug}`}
+                            className="flex min-h-10 min-w-0 items-center rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-canvas-50 hover:text-canvas-700 active:bg-canvas-100 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+                          >
+                            <span className="min-w-0 truncate">{item.name}</span>
+                          </Link>
+                        )) : (
+                          <p className="px-3 py-2 text-xs text-slate-400">这个目录还没有函数</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+          )}
+        </div>
+      </section>
+
+      <section className="relative hidden overflow-hidden border-b border-slate-200/70 dark:border-white/10 md:block">
         <div className="pointer-events-none absolute inset-0 canvas-grid opacity-60 dark:opacity-25" />
         <div className="pointer-events-none absolute -left-24 -top-20 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl dark:bg-cyan-500/10" />
         <div className="pointer-events-none absolute -right-24 top-8 h-80 w-80 rounded-full bg-violet-400/20 blur-3xl dark:bg-violet-500/10" />
@@ -100,7 +206,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <section className="mx-auto hidden max-w-7xl px-4 pt-8 sm:px-6 md:block lg:px-8">
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
           {['全部', ...categories].map((name) => (
             <button
