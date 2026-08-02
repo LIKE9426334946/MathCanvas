@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+:root.dark { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+.canvas-grid {
+  background-image:
+    linear-gradient(rgba(112, 102, 232, .08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(112, 102, 232, .08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+.math-formula .katex-display { margin: 0; }
+.math-formula .katex { font-size: clamp(1.05rem, 3.5vw, 1.42rem); }
+
+.math-range {
+  --range-progress: 50%;
+  appearance: none;
+  height: 30px;
+  cursor: pointer;
+  background: transparent;
+  touch-action: pan-y;
+}
+
+.math-range::-webkit-slider-runnable-track {
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #7066e8 0 var(--range-progress), #e2e8f0 var(--range-progress) 100%);
+}
+
+.dark .math-range::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #8c83f2 0 var(--range-progress), #3b384d var(--range-progress) 100%);
+}
+
+.math-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  margin-top: -9px;
+  border: 4px solid white;
+  border-radius: 50%;
+  background: #7066e8;
+  box-shadow: 0 3px 12px rgba(70, 60, 168, .35);
+}
+
+.dark .math-range::-webkit-slider-thumb { border-color: #252338; }
+
+.math-range::-moz-range-track { height: 7px; border-radius: 999px; background: #e2e8f0; }
+.math-range::-moz-range-progress { height: 7px; border-radius: 999px; background: #7066e8; }
+.math-range::-moz-range-thumb { width: 18px; height: 18px; border: 4px solid white; border-radius: 50%; background: #7066e8; box-shadow: 0 3px 12px rgba(70, 60, 168, .35); }
+
+@layer components {
+  .admin-card {
+    @apply rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.045] sm:p-6;
+  }
+
+  .admin-section-title {
+    @apply flex items-start gap-3;
+  }
+
+  .admin-section-title > span {
+    @apply grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-canvas-100 text-xs font-black text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100;
+  }
+
+  .admin-section-title h2 {
+    @apply text-base font-bold text-slate-900 dark:text-white;
+  }
+
+  .admin-section-title p {
+    @apply mt-0.5 text-xs text-slate-400;
+  }
+
+  .admin-field {
+    @apply flex min-w-0 flex-col gap-2;
+  }
+
+  .admin-field > span {
+    @apply text-xs font-bold text-slate-600 dark:text-slate-300;
+  }
+
+  .admin-field > input,
+  .admin-field > textarea,
+  .admin-field > select {
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-canvas-400 focus:bg-white focus:ring-4 focus:ring-canvas-500/10 dark:border-white/10 dark:bg-black/20 dark:text-white dark:focus:border-canvas-500 dark:focus:bg-black/10;
+  }
+
+  .admin-field > small {
+    @apply text-xs leading-5 text-slate-400;
+  }
+
+  .admin-mini-field {
+    @apply flex min-w-0 flex-col gap-1.5;
+  }
+
+  .admin-mini-field > span {
+    @apply text-[11px] font-bold text-slate-400;
+  }
+
+  .admin-mini-field > input {
+    @apply min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-canvas-400 focus:ring-4 focus:ring-canvas-500/10 dark:border-white/10 dark:bg-white/5 dark:focus:border-canvas-500;
+  }
+
+  .admin-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-canvas-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-canvas-500/15 transition hover:bg-canvas-700 active:scale-[.98];
+  }
+
+  .admin-button-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-canvas-300 hover:text-canvas-700 active:scale-[.98] dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-canvas-500/50 dark:hover:text-white;
+  }
+
+  .admin-button-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-100 active:scale-[.98] dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20;
+  }
+}
+
+@media (max-width: 640px) {
+  .katex-display > .katex { white-space: nowrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

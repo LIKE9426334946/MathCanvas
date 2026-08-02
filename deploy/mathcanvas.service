@@ -1,0 +1,20 @@
+[Unit]
+Description=MathCanvas Node.js Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/MathCanvas
+ExecStart=/usr/bin/node /opt/MathCanvas/backend/dist/server.js
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3021
+Environment=DATA_DIR=/opt/MathCanvas/backend/data
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

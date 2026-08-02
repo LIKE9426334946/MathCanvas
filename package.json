@@ -1,0 +1,21 @@
+{
+  "name": "mathcanvas",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev --workspace backend\" \"npm run dev --workspace client\"",
+    "build": "npm run build --workspace client && npm run build --workspace backend",
+    "start": "npm run start --workspace backend",
+    "typecheck": "npm run typecheck --workspace client && npm run typecheck --workspace backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
