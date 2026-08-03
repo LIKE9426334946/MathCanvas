@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { AlertTriangle } from 'lucide-react';
+import { prepareLineSeries } from '../lib/chartSeries';
 import { buildSeries } from '../lib/expressionEngine';
 import type { FunctionConfig, ParameterValues } from '../types';
 
@@ -28,9 +29,13 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
 
   const result = useMemo(() => {
     try {
-      return { points: buildSeries(config, values), error: '' };
+      const points = buildSeries(config, values);
+      const prepared = config.chartType === 'line'
+        ? prepareLineSeries(points, config.yMin, config.yMax)
+        : { points, discontinuities: [] };
+      return { ...prepared, error: '' };
     } catch (caught) {
-      return { points: [], error: caught instanceof Error ? caught.message : '表达式无法解析' };
+      return { points: [], discontinuities: [], error: caught instanceof Error ? caught.message : '表达式无法解析' };
     }
   }, [config, values]);
 
@@ -103,8 +108,19 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
         },
       } : undefined,
       barMaxWidth: 26,
+      markLine: config.chartType === 'line' && result.discontinuities.length > 0 ? {
+        silent: true,
+        symbol: 'none',
+        label: { show: false },
+        lineStyle: {
+          color: isDark ? 'rgba(203, 213, 225, .32)' : 'rgba(100, 116, 139, .35)',
+          type: 'dashed',
+          width: 1.25,
+        },
+        data: result.discontinuities.map((x) => ({ xAxis: x })),
+      } : undefined,
     }],
-  }), [compact, config, isDark, isMobile, result.points]);
+  }), [compact, config, isDark, isMobile, result.discontinuities, result.points]);
 
   if (result.error) {
     return (
