@@ -1,10 +1,14 @@
 import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
   Download,
   FileUp,
   Folder,
   FolderOpen,
   FolderPlus,
   FunctionSquare,
+  ListOrdered,
   Pencil,
   Plus,
   Save,
@@ -98,6 +102,8 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
   const [query, setQuery] = useState('');
   const [saving, setSaving] = useState(false);
   const [addingDirectory, setAddingDirectory] = useState(false);
+  const [sortingDirectories, setSortingDirectories] = useState(false);
+  const [directoryOrderSaving, setDirectoryOrderSaving] = useState(false);
   const [newDirectoryName, setNewDirectoryName] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -259,6 +265,27 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
     }
   };
 
+  const moveDirectory = async (index: number, offset: -1 | 1) => {
+    const targetIndex = index + offset;
+    if (targetIndex < 0 || targetIndex >= directories.length || directoryOrderSaving) return;
+
+    const previousDirectories = directories;
+    const nextDirectories = [...directories];
+    [nextDirectories[index], nextDirectories[targetIndex]] = [nextDirectories[targetIndex], nextDirectories[index]];
+    setDirectories(nextDirectories);
+    setDirectoryOrderSaving(true);
+    try {
+      const savedDirectories = await api.reorderDirectories(nextDirectories.map((directory) => directory.id));
+      setDirectories(savedDirectories);
+      showMessage('success', '目录顺序已保存，并同步到手机端');
+    } catch (caught) {
+      setDirectories(previousDirectories);
+      showMessage('error', caught instanceof Error ? caught.message : '目录排序保存失败');
+    } finally {
+      setDirectoryOrderSaving(false);
+    }
+  };
+
   const saveFunction = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
@@ -313,7 +340,7 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
     event.target.value = '';
     if (!file) return;
     try {
-      const parsed = JSON.parse(await file.text()) as { functions?: FunctionInput[]; directories?: Array<{ name: string }> } | FunctionInput[];
+      const parsed = JSON.parse(await file.text()) as { functions?: FunctionInput[]; directories?: Array<{ name: string; order?: number }> } | FunctionInput[];
       const items = Array.isArray(parsed) ? parsed : parsed.functions;
       const importedDirectories = Array.isArray(parsed) ? undefined : parsed.directories;
       if (!Array.isArray(items) || items.length === 0) throw new Error('JSON 文件中没有函数配置');
@@ -373,7 +400,18 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
             <span><FolderOpen size={17} /></span>
             <div><h2>目录</h2><p>选择目录后只显示其中的函数</p></div>
           </div>
-          <button type="button" onClick={() => setAddingDirectory(true)} className="admin-button-primary"><FolderPlus size={17} /> 新建目录</button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setSortingDirectories((current) => !current)}
+              disabled={directoryOrderSaving || directories.length < 2}
+              className={`${sortingDirectories ? 'admin-button-primary' : 'admin-button-secondary'} disabled:opacity-50`}
+            >
+              {sortingDirectories ? <Check size={17} /> : <ListOrdered size={17} />}
+              {sortingDirectories ? '完成排序' : '目录排序'}
+            </button>
+            <button type="button" onClick={() => setAddingDirectory(true)} className="admin-button-primary"><FolderPlus size={17} /> 新建目录</button>
+          </div>
         </div>
 
         {addingDirectory && (
@@ -384,8 +422,14 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
           </form>
         )}
 
+        {sortingDirectories && (
+          <p className="mt-4 rounded-2xl bg-canvas-50 px-4 py-3 text-sm text-canvas-700 dark:bg-canvas-500/10 dark:text-canvas-100">
+            使用目录卡片右侧的左右箭头调整顺序，修改后会自动保存并同步到手机端。
+          </p>
+        )}
+
         <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {directories.map((directory) => {
+          {directories.map((directory, directoryIndex) => {
             const selected = directory.id === selectedDirectoryId;
             const count = functionCount(directory);
             return (
@@ -397,12 +441,21 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
                   <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${selected ? 'bg-white/15' : 'bg-white text-canvas-600 dark:bg-white/5 dark:text-canvas-100'}`}><Folder size={18} /></span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">{directory.name}</span>
-                    <span className={`mt-1 block text-xs ${selected ? 'text-white/70' : 'text-slate-400'}`}>{count} 个函数</span>
+                    <span className={`mt-1 block text-xs ${selected ? 'text-white/70' : 'text-slate-400'}`}>{sortingDirectories ? `顺序 ${directoryIndex + 1} · ` : ''}{count} 个函数</span>
                   </span>
                 </button>
-                <span className="flex shrink-0 flex-col gap-1">
-                  <button type="button" onClick={() => void renameDirectory(directory)} className={`grid h-8 w-8 place-items-center rounded-lg transition ${selected ? 'text-white/70 hover:bg-white/15 hover:text-white' : 'text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white'}`} title="重命名目录"><Pencil size={14} /></button>
-                  <button type="button" onClick={() => void removeDirectory(directory)} className={`grid h-8 w-8 place-items-center rounded-lg transition ${selected ? 'text-white/70 hover:bg-white/15 hover:text-white' : 'text-slate-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-300'}`} title="删除目录"><Trash2 size={14} /></button>
+                <span className={`flex shrink-0 gap-1 ${sortingDirectories ? 'self-center' : 'flex-col'}`}>
+                  {sortingDirectories ? (
+                    <>
+                      <button type="button" onClick={() => void moveDirectory(directoryIndex, -1)} disabled={directoryIndex === 0 || directoryOrderSaving} className={`grid h-8 w-8 place-items-center rounded-lg transition disabled:cursor-not-allowed disabled:opacity-25 ${selected ? 'text-white/80 hover:bg-white/15 hover:text-white' : 'text-slate-500 hover:bg-slate-200 hover:text-canvas-700 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white'}`} title="向前移动" aria-label={`将 ${directory.name} 向前移动`}><ChevronLeft size={16} /></button>
+                      <button type="button" onClick={() => void moveDirectory(directoryIndex, 1)} disabled={directoryIndex === directories.length - 1 || directoryOrderSaving} className={`grid h-8 w-8 place-items-center rounded-lg transition disabled:cursor-not-allowed disabled:opacity-25 ${selected ? 'text-white/80 hover:bg-white/15 hover:text-white' : 'text-slate-500 hover:bg-slate-200 hover:text-canvas-700 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white'}`} title="向后移动" aria-label={`将 ${directory.name} 向后移动`}><ChevronRight size={16} /></button>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => void renameDirectory(directory)} className={`grid h-8 w-8 place-items-center rounded-lg transition ${selected ? 'text-white/70 hover:bg-white/15 hover:text-white' : 'text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white'}`} title="重命名目录"><Pencil size={14} /></button>
+                      <button type="button" onClick={() => void removeDirectory(directory)} className={`grid h-8 w-8 place-items-center rounded-lg transition ${selected ? 'text-white/70 hover:bg-white/15 hover:text-white' : 'text-slate-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/10 dark:hover:text-rose-300'}`} title="删除目录"><Trash2 size={14} /></button>
+                    </>
+                  )}
                 </span>
               </div>
             );

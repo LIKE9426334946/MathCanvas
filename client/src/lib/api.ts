@@ -28,6 +28,10 @@ export const api = {
     method: 'PUT',
     body: JSON.stringify({ name }),
   }),
+  reorderDirectories: (ids: string[]) => request<Directory[]>('/api/directories/order', {
+    method: 'PUT',
+    body: JSON.stringify({ ids }),
+  }),
   deleteDirectory: (id: string) => request<{ movedFunctions: number }>(`/api/directories/${id}`, { method: 'DELETE' }),
   listFunctions: () => request<FunctionConfig[]>('/api/functions'),
   getFunction: (slug: string) => request<FunctionConfig>(`/api/functions/${encodeURIComponent(slug)}`),
@@ -40,7 +44,7 @@ export const api = {
     body: JSON.stringify(input),
   }),
   deleteFunction: (id: string) => request<void>(`/api/functions/${id}`, { method: 'DELETE' }),
-  importFunctions: (functions: FunctionInput[], mode: 'merge' | 'replace', directories?: Array<{ name: string }>) => request<{ imported: number; functions: FunctionConfig[] }>('/api/config/import', {
+  importFunctions: (functions: FunctionInput[], mode: 'merge' | 'replace', directories?: Array<{ name: string; order?: number }>) => request<{ imported: number; functions: FunctionConfig[] }>('/api/config/import', {
     method: 'POST',
     body: JSON.stringify({ functions, mode, directories }),
   }),

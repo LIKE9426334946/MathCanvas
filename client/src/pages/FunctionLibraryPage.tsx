@@ -72,7 +72,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
 
   const categories = useMemo(() => {
     const unique = [...new Set(functions.map((item) => item.category))];
-    return unique.sort((a, b) => {
+    const fallbackOrder = unique.sort((a, b) => {
       const aIndex = categoryOrder.indexOf(a);
       const bIndex = categoryOrder.indexOf(b);
       if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
@@ -80,7 +80,15 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
       if (bIndex === -1) return -1;
       return aIndex - bIndex;
     });
-  }, [functions]);
+    if (directories.length === 0) return fallbackOrder;
+
+    const functionCategorySet = new Set(unique.map((name) => name.toLowerCase()));
+    const orderedNames = directories
+      .map((directory) => directory.name)
+      .filter((name) => functionCategorySet.has(name.toLowerCase()));
+    const orderedNameSet = new Set(orderedNames.map((name) => name.toLowerCase()));
+    return [...orderedNames, ...fallbackOrder.filter((name) => !orderedNameSet.has(name.toLowerCase()))];
+  }, [directories, functions]);
 
   const visibleFunctions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -100,14 +108,6 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
       ? directories.map((item) => item.name)
       : categories;
     return [...new Set(names)]
-      .sort((a, b) => {
-        const aIndex = categoryOrder.indexOf(a);
-        const bIndex = categoryOrder.indexOf(b);
-        if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
-        if (aIndex === -1) return 1;
-        if (bIndex === -1) return -1;
-        return aIndex - bIndex;
-      })
       .map((name) => ({ name, items: functions.filter((item) => item.category === name) }));
   }, [categories, directories, functions]);
 

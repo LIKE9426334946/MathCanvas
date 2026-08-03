@@ -3,6 +3,7 @@ export type ChartType = 'line' | 'bar';
 export interface Directory {
   id: string;
   name: string;
+  order: number;
   functionCount: number;
   createdAt: string;
   updatedAt: string;

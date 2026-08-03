@@ -15,10 +15,11 @@ import {
   importFunctions,
   listDirectories,
   listFunctions,
+  reorderDirectories,
   updateDirectory,
   updateFunction,
 } from './database.js';
-import { directoryInputSchema, functionInputSchema, importSchema } from './validation.js';
+import { directoryInputSchema, directoryOrderSchema, functionInputSchema, importSchema } from './validation.js';
 
 const app = express();
 const host = process.env.HOST ?? '127.0.0.1';
@@ -39,6 +40,11 @@ app.get('/api/directories', (_request, response) => {
 app.post('/api/directories', (request, response) => {
   const input = directoryInputSchema.parse(request.body);
   response.status(201).json(createDirectory(input.name));
+});
+
+app.put('/api/directories/order', (request, response) => {
+  const input = directoryOrderSchema.parse(request.body);
+  response.json(reorderDirectories(input.ids));
 });
 
 app.put('/api/directories/:id', (request, response) => {
@@ -91,7 +97,7 @@ app.get('/api/config/export', (_request, response) => {
   response.json({
     version: 2,
     exportedAt: new Date().toISOString(),
-    directories: listDirectories().map(({ name }) => ({ name })),
+    directories: listDirectories().map(({ name, order }) => ({ name, order })),
     functions: listFunctions(),
   });
 });
@@ -125,6 +131,9 @@ app.use((error: unknown, _request: express.Request, response: express.Response, 
   }
   if (error instanceof Error && error.message === 'DEFAULT_DIRECTORY') {
     return response.status(400).json({ message: 'Uncategorized 是系统保留目录，不能删除' });
+  }
+  if (error instanceof Error && error.message === 'DIRECTORY_ORDER_INVALID') {
+    return response.status(400).json({ message: '目录顺序已经变化，请刷新后重试' });
   }
   console.error(error);
   response.status(500).json({ message: '服务器处理请求时出现错误' });

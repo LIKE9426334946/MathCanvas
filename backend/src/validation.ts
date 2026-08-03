@@ -2,6 +2,14 @@ import { z } from 'zod';
 
 export const directoryInputSchema = z.object({
   name: z.string().trim().min(1, '目录名称不能为空').max(60),
+  order: z.number().int().min(0).optional(),
+});
+
+export const directoryOrderSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(100).refine(
+    (ids) => new Set(ids).size === ids.length,
+    '目录不能重复',
+  ),
 });
 
 const parameterSchema = z.object({
