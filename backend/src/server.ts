@@ -95,7 +95,7 @@ app.delete('/api/functions/:id', (request, response) => {
 app.get('/api/config/export', (_request, response) => {
   response.setHeader('Content-Disposition', 'attachment; filename="mathcanvas-functions.json"');
   response.json({
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     directories: listDirectories().map(({ name, order }) => ({ name, order })),
     functions: listFunctions(),

@@ -34,6 +34,7 @@ database.run(`
     slug TEXT NOT NULL UNIQUE,
     category TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    details TEXT NOT NULL DEFAULT '',
     expression TEXT NOT NULL,
     formula TEXT NOT NULL DEFAULT '',
     parameters TEXT NOT NULL DEFAULT '[]',
@@ -59,12 +60,21 @@ if (!hasDirectoryOrder) {
   directoryOrderMigrationNeeded = true;
 }
 
+const functionTable = database.exec('PRAGMA table_info(functions)');
+const hasFunctionDetails = functionTable[0]?.values.some((row) => row[1] === 'details') ?? false;
+let functionDetailsMigrationNeeded = false;
+if (!hasFunctionDetails) {
+  database.run("ALTER TABLE functions ADD COLUMN details TEXT NOT NULL DEFAULT ''");
+  functionDetailsMigrationNeeded = true;
+}
+
 interface FunctionRow {
   id: string;
   name: string;
   slug: string;
   category: string;
   description: string;
+  details: string;
   expression: string;
   formula: string;
   parameters: string;
@@ -119,7 +129,7 @@ const normalizeDirectoryOrder = () => {
 };
 
 const directoryOrderNormalized = normalizeDirectoryOrder();
-if (directoryOrderMigrationNeeded || directoryOrderNormalized) persist();
+if (directoryOrderMigrationNeeded || functionDetailsMigrationNeeded || directoryOrderNormalized) persist();
 
 const toConfig = (row: FunctionRow): FunctionConfig => ({
   id: row.id,
@@ -127,6 +137,7 @@ const toConfig = (row: FunctionRow): FunctionConfig => ({
   slug: row.slug,
   category: row.category,
   description: row.description,
+  details: row.details,
   expression: row.expression,
   formula: row.formula,
   parameters: JSON.parse(row.parameters),
@@ -169,6 +180,7 @@ const serialize = (input: FunctionConfigInput, id?: string, createdAt?: string) 
   return {
     ...input,
     id: id ?? input.id ?? randomUUID(),
+    details: input.details ?? '',
     parameters: JSON.stringify(input.parameters),
     isBuiltin: input.isBuiltin ? 1 : 0,
     createdAt: createdAt ?? now,
@@ -179,12 +191,12 @@ const serialize = (input: FunctionConfigInput, id?: string, createdAt?: string) 
 const insert = (data: ReturnType<typeof serialize>) => {
   database.run(`
     INSERT INTO functions (
-      id, name, slug, category, description, expression, formula, parameters,
+      id, name, slug, category, description, details, expression, formula, parameters,
       x_min, x_max, y_min, y_max, sample_count, chart_type, is_builtin, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
-    data.id, data.name, data.slug, data.category, data.description, data.expression,
-    data.formula, data.parameters, data.xMin, data.xMax, data.yMin, data.yMax,
+    data.id, data.name, data.slug, data.category, data.description, data.details,
+    data.expression, data.formula, data.parameters, data.xMin, data.xMax, data.yMin, data.yMax,
     data.sampleCount, data.chartType, data.isBuiltin, data.createdAt, data.updatedAt,
   ]);
 };
@@ -192,12 +204,12 @@ const insert = (data: ReturnType<typeof serialize>) => {
 const update = (data: ReturnType<typeof serialize>) => {
   database.run(`
     UPDATE functions SET
-      name=?, slug=?, category=?, description=?, expression=?, formula=?, parameters=?,
+      name=?, slug=?, category=?, description=?, details=?, expression=?, formula=?, parameters=?,
       x_min=?, x_max=?, y_min=?, y_max=?, sample_count=?, chart_type=?, is_builtin=?, updated_at=?
     WHERE id=?
   `, [
-    data.name, data.slug, data.category, data.description, data.expression, data.formula,
-    data.parameters, data.xMin, data.xMax, data.yMin, data.yMax, data.sampleCount,
+    data.name, data.slug, data.category, data.description, data.details, data.expression,
+    data.formula, data.parameters, data.xMin, data.xMax, data.yMin, data.yMax, data.sampleCount,
     data.chartType, data.isBuiltin, data.updatedAt, data.id,
   ]);
 };

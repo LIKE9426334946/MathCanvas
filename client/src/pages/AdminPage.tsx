@@ -36,6 +36,7 @@ const emptyFunction = (category = 'Uncategorized'): FunctionInput => ({
   slug: '',
   category,
   description: '',
+  details: '',
   expression: '',
   formula: '',
   parameters: [
@@ -56,6 +57,7 @@ const toInput = (config: FunctionConfig): FunctionInput => ({
   slug: config.slug,
   category: config.category,
   description: config.description,
+  details: config.details,
   expression: config.expression,
   formula: config.formula,
   parameters: config.parameters.map((item) => ({ ...item })),
@@ -92,6 +94,12 @@ const previewConfig = (input: FunctionInput): FunctionConfig => ({
 });
 
 const numberValue = (value: string, fallback = 0) => value === '' ? fallback : Number(value);
+
+const detailsPlaceholder = String.raw`\begin{aligned}
+\text{定义域：}&\quad x \in \mathbb{R} \\
+\text{值域：}&\quad y \in [-1,1] \\
+\text{性质：}&\quad \text{填写函数性质}
+\end{aligned}`;
 
 export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: AdminProps) => {
   const [directories, setDirectories] = useState<Directory[]>([]);
@@ -515,6 +523,17 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
           <div className="mt-5 grid min-w-0 gap-4">
             <label className="admin-field"><span>函数表达式</span><input required value={draft.expression} onChange={(event) => setField('expression', event.target.value)} className="font-mono" placeholder="a * sin(b * x)" /><small>支持 sin、cos、exp、log、sqrt、gamma、beta、erf 以及内置概率分布函数。</small></label>
             <label className="admin-field"><span>数学公式（LaTeX）</span><input value={draft.formula} onChange={(event) => setField('formula', event.target.value)} className="font-mono" placeholder="f(x)=a\\sin(bx)" /></label>
+            <label className="admin-field">
+              <span>函数详细信息（LaTeX）</span>
+              <textarea
+                rows={5}
+                value={draft.details}
+                onChange={(event) => setField('details', event.target.value)}
+                className="font-mono"
+                placeholder={detailsPlaceholder}
+              />
+              <small>填写后，函数详情页会显示“查看更多”按钮；留空则不显示。</small>
+            </label>
           </div>
         </section>
 

@@ -34,6 +34,7 @@ export const functionInputSchema = z.object({
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'slug 只能包含小写字母、数字和连字符'),
   category: z.string().trim().min(1).max(60),
   description: z.string().trim().max(1000).default(''),
+  details: z.string().trim().max(10000).default(''),
   expression: z.string().trim().min(1).max(500),
   formula: z.string().trim().max(1000).default(''),
   parameters: z.array(parameterSchema).max(8).default([]),

@@ -24,6 +24,7 @@ export interface FunctionConfig {
   slug: string;
   category: string;
   description: string;
+  details: string;
   expression: string;
   formula: string;
   parameters: FunctionParameter[];
@@ -40,5 +41,5 @@ export interface FunctionConfig {
 
 export type FunctionConfigInput = Omit<
   FunctionConfig,
-  'id' | 'isBuiltin' | 'createdAt' | 'updatedAt'
-> & { id?: string; isBuiltin?: boolean };
+  'id' | 'details' | 'isBuiltin' | 'createdAt' | 'updatedAt'
+> & { id?: string; details?: string; isBuiltin?: boolean };

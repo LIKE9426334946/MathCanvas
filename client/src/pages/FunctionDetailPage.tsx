@@ -1,4 +1,4 @@
-import { ArrowLeft, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, ChevronDown, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { BlockMath } from 'react-katex';
 import { Link, useParams } from 'react-router-dom';
@@ -23,9 +23,13 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
   const { slug } = useParams();
   const config = useMemo(() => functions.find((item) => item.slug === slug), [functions, slug]);
   const [values, setValues] = useState<ParameterValues>({});
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    if (config) setValues(defaultValues(config));
+    if (config) {
+      setValues(defaultValues(config));
+      setShowDetails(false);
+    }
   }, [config]);
 
   if (loading) return <LoadingState />;
@@ -71,8 +75,30 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
           </div>
 
           <div className="order-2 rounded-3xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-white/[0.045] sm:p-6 lg:order-3">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">关于这个函数</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">关于这个函数</h2>
+              {config.details.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setShowDetails((current) => !current)}
+                  aria-expanded={showDetails}
+                  aria-controls="function-details"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-canvas-50 px-3 py-1.5 text-xs font-bold text-canvas-700 transition active:bg-canvas-100 dark:bg-canvas-500/10 dark:text-canvas-100 dark:active:bg-canvas-500/20 sm:text-sm"
+                >
+                  {showDetails ? '收起' : '查看更多'}
+                  <ChevronDown size={15} className={`transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+            </div>
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-base sm:leading-7">{config.description}</p>
+            {showDetails && config.details.trim() && (
+              <div id="function-details" className="math-formula mt-4 overflow-x-auto rounded-2xl border border-canvas-100 bg-canvas-50 px-3 py-4 text-center text-canvas-950 dark:border-white/10 dark:bg-black/20 dark:text-white sm:px-4">
+                <BlockMath
+                  math={config.details}
+                  renderError={() => <span className="text-sm text-rose-500">详细信息的 LaTeX 格式有误</span>}
+                />
+              </div>
+            )}
             <div className="mt-4 hidden rounded-2xl bg-slate-50 px-4 py-3 dark:bg-black/20 sm:block">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Expression</span>
               <code className="mt-1 block overflow-x-auto whitespace-nowrap text-sm font-semibold text-canvas-700 dark:text-canvas-100">{config.expression}</code>

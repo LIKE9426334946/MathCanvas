@@ -24,6 +24,7 @@ export interface FunctionConfig {
   slug: string;
   category: string;
   description: string;
+  details: string;
   expression: string;
   formula: string;
   parameters: FunctionParameter[];
