@@ -38,7 +38,11 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-24 pt-4 sm:px-6 sm:pt-8 lg:px-8">
-      <Link to="/" className="inline-flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white">
+      <Link
+        to="/"
+        state={{ expandedDirectory: config.category }}
+        className="inline-flex items-center gap-2 rounded-xl px-2 py-2 text-sm font-semibold text-slate-500 transition hover:bg-white hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+      >
         <ArrowLeft size={18} /> 返回函数库
       </Link>
 
