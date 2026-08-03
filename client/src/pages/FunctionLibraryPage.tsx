@@ -43,7 +43,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('全部');
   const [directories, setDirectories] = useState<Directory[]>([]);
-  const [mobileDirectory, setMobileDirectory] = useState<string | null>('');
+  const [mobileDirectory, setMobileDirectory] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
