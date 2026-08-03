@@ -11,7 +11,7 @@ import {
   Waves,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
 import { LoadingState } from '../components/LoadingState';
 import { api } from '../lib/api';
@@ -40,10 +40,23 @@ const categoryMeta: Record<string, { icon: typeof Activity; color: string; descr
 };
 
 export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const returnedDirectory = (location.state as { expandedDirectory?: string } | null)?.expandedDirectory ?? null;
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('全部');
   const [directories, setDirectories] = useState<Directory[]>([]);
-  const [mobileDirectory, setMobileDirectory] = useState<string | null>(null);
+  const [mobileDirectory, setMobileDirectory] = useState<string | null>(returnedDirectory);
+
+  useEffect(() => {
+    if (!returnedDirectory) return;
+
+    setMobileDirectory(returnedDirectory);
+    navigate(
+      { pathname: location.pathname, search: location.search, hash: location.hash },
+      { replace: true, state: null },
+    );
+  }, [location.hash, location.pathname, location.search, navigate, returnedDirectory]);
 
   useEffect(() => {
     let active = true;
