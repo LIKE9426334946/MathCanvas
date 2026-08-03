@@ -32,8 +32,8 @@ const emptyFunction = (category = 'Uncategorized'): FunctionInput => ({
   slug: '',
   category,
   description: '',
-  expression: 'a * sin(b * x)',
-  formula: 'f(x)=a\\sin(bx)',
+  expression: '',
+  formula: '',
   parameters: [
     { name: 'a', label: 'a', min: 0, max: 3, step: 0.1, default: 1 },
     { name: 'b', label: 'b', min: 0, max: 5, step: 0.1, default: 1 },
@@ -69,6 +69,15 @@ const slugify = (value: string) => value
   .toLowerCase()
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
+
+const createUniqueSlug = (name: string, functions: FunctionConfig[]) => {
+  const base = slugify(name) || 'function';
+  const existingSlugs = new Set(functions.map((item) => item.slug));
+  if (!existingSlugs.has(base)) return base;
+  let suffix = 2;
+  while (existingSlugs.has(`${base}-${suffix}`)) suffix += 1;
+  return `${base}-${suffix}`;
+};
 
 const previewConfig = (input: FunctionInput): FunctionConfig => ({
   ...input,
@@ -254,11 +263,13 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
     event.preventDefault();
     setSaving(true);
     try {
-      if (!draft.slug) throw new Error('请填写页面标识 slug');
       compileExpression(draft.expression, draft.parameters.map((item) => item.name));
+      const input = selectedId
+        ? draft
+        : { ...draft, slug: createUniqueSlug(draft.name, functions) };
       const saved = selectedId
-        ? await api.updateFunction(selectedId, draft)
-        : await api.createFunction(draft);
+        ? await api.updateFunction(selectedId, input)
+        : await api.createFunction(input);
       const nextFunctions = selectedId
         ? functions.map((item) => item.id === selectedId ? saved : item)
         : [...functions, saved];
@@ -440,9 +451,8 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
         <section className="admin-card min-w-0">
           <div className="admin-section-title"><span>01</span><div><h2>基本信息</h2><p>名称、所属目录以及在函数库中的说明</p></div></div>
           <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
-            <label className="admin-field"><span>函数名称</span><input required value={draft.name} onChange={(event) => setField('name', event.target.value)} onBlur={() => !draft.slug && setField('slug', slugify(draft.name))} placeholder="例如 Gamma Function" /></label>
+            <label className="admin-field"><span>函数名称</span><input required value={draft.name} onChange={(event) => setField('name', event.target.value)} placeholder="例如 Gamma Function" /></label>
             <label className="admin-field"><span>所属目录</span><select required value={draft.category} onChange={(event) => setField('category', event.target.value)}>{directories.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
-            <label className="admin-field md:col-span-2"><span>页面标识（slug）</span><input required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={draft.slug} onChange={(event) => setField('slug', slugify(event.target.value))} placeholder="gamma-function" /></label>
             <label className="admin-field md:col-span-2"><span>函数说明</span><textarea rows={3} value={draft.description} onChange={(event) => setField('description', event.target.value)} placeholder="简要说明函数的含义和参数作用" /></label>
           </div>
         </section>
@@ -490,7 +500,13 @@ export const AdminPage = ({ functions, setFunctions, loading, error, refresh }: 
 
           <section className="admin-card min-w-0 overflow-hidden">
             <div className="admin-section-title"><span>05</span><div><h2>实时预览</h2><p>使用参数默认值绘制</p></div></div>
-            <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/10"><FunctionChart config={previewConfig(draft)} values={currentValues} compact /></div>
+            <div className="mt-4 min-w-0 overflow-hidden rounded-2xl border border-slate-100 dark:border-white/10">
+              {draft.expression.trim() ? (
+                <FunctionChart config={previewConfig(draft)} values={currentValues} compact />
+              ) : (
+                <div className="grid min-h-[300px] place-items-center px-5 text-center text-sm text-slate-400">填写函数表达式后显示预览</div>
+              )}
+            </div>
           </section>
         </div>
 
