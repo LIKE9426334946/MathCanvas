@@ -173,8 +173,8 @@ const update = (data: ReturnType<typeof serialize>) => {
 
 export const listFunctions = (category?: string): FunctionConfig[] => {
   const rows = category
-    ? queryAll<FunctionRow>('SELECT * FROM functions WHERE category = ? ORDER BY name COLLATE NOCASE', [category])
-    : queryAll<FunctionRow>('SELECT * FROM functions ORDER BY category COLLATE NOCASE, name COLLATE NOCASE');
+    ? queryAll<FunctionRow>('SELECT * FROM functions WHERE category = ? ORDER BY created_at ASC, rowid ASC', [category])
+    : queryAll<FunctionRow>('SELECT * FROM functions ORDER BY category COLLATE NOCASE, created_at ASC, rowid ASC');
   return rows.map(toConfig);
 };
 
