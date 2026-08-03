@@ -11,10 +11,19 @@ interface FunctionChartProps {
   compact?: boolean;
 }
 
-const formatNumber = (value: number) => {
+const isFiniteNumber = (value: number | null | undefined): value is number => (
+  typeof value === 'number' && Number.isFinite(value)
+);
+
+const formatNumber = (value: number | null | undefined) => {
+  if (!isFiniteNumber(value)) return '未定义';
   if (Math.abs(value) >= 1000 || (Math.abs(value) > 0 && Math.abs(value) < 0.001)) return value.toExponential(2);
   return Number(value.toFixed(4)).toString();
 };
+
+const formatCoordinate = (value: number | null | undefined) => (
+  isFiniteNumber(value) ? Number(value.toFixed(1)).toString() : '未定义'
+);
 
 export const FunctionChart = ({ config, values, compact = false }: FunctionChartProps) => {
   const isDark = document.documentElement.classList.contains('dark');
@@ -51,6 +60,8 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
     tooltip: {
       trigger: 'axis',
       confine: true,
+      enterable: false,
+      hideDelay: 0,
       position: (
         point: [number, number],
         _parameters: unknown,
@@ -66,9 +77,14 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
       backgroundColor: isDark ? '#252338' : '#ffffff',
       borderColor: isDark ? '#3a3751' : '#e2e8f0',
       textStyle: { color: isDark ? '#f8fafc' : '#0f172a', fontSize: 12 },
-      formatter: (items: Array<{ value: [number, number] }>) => {
+      formatter: (items: Array<{ value: [number, number | null] }>) => {
         const item = items[0];
-        return item ? `x = ${formatNumber(item.value[0])}<br/><strong>f(x) = ${formatNumber(item.value[1])}</strong>` : '';
+        if (!item || !Array.isArray(item.value)) return '';
+
+        const [x, y] = item.value;
+        return isFiniteNumber(y)
+          ? `x = ${formatCoordinate(x)}<br/><strong>f(x) = ${formatNumber(y)}</strong>`
+          : `x = ${formatCoordinate(x)}<br/><strong>f(x) 未定义</strong>`;
       },
     },
     xAxis: {
