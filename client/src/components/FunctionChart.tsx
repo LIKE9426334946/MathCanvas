@@ -45,6 +45,19 @@ export const FunctionChart = ({ config, values, compact = false }: FunctionChart
     },
     tooltip: {
       trigger: 'axis',
+      confine: true,
+      position: (
+        point: [number, number],
+        _parameters: unknown,
+        _element: HTMLElement,
+        _rect: unknown,
+        size: { contentSize: [number, number]; viewSize: [number, number] },
+      ) => {
+        const horizontalPadding = 8;
+        const centeredLeft = point[0] - size.contentSize[0] / 2;
+        const maximumLeft = size.viewSize[0] - size.contentSize[0] - horizontalPadding;
+        return [Math.max(horizontalPadding, Math.min(centeredLeft, maximumLeft)), 8];
+      },
       backgroundColor: isDark ? '#252338' : '#ffffff',
       borderColor: isDark ? '#3a3751' : '#e2e8f0',
       textStyle: { color: isDark ? '#f8fafc' : '#0f172a', fontSize: 12 },
