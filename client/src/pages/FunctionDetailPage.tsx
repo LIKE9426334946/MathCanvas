@@ -53,7 +53,7 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
               <button
                 type="button"
                 onClick={() => setValues(defaultValues(config))}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+                className="hidden items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white sm:inline-flex"
               >
                 <RotateCcw size={16} /> 重置
               </button>
@@ -85,10 +85,17 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-canvas-100 text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100 sm:h-10 sm:w-10 sm:rounded-2xl">
               <SlidersHorizontal size={19} />
             </span>
-            <div>
+            <div className="min-w-0">
               <h2 className="font-bold text-slate-900 dark:text-white">参数控制</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">滑动时图像会实时更新</p>
             </div>
+            <button
+              type="button"
+              onClick={() => setValues(defaultValues(config))}
+              className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 transition active:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:active:bg-white/5 sm:hidden"
+            >
+              <RotateCcw size={15} /> 重置
+            </button>
           </div>
 
           {config.parameters.length === 0 ? (
