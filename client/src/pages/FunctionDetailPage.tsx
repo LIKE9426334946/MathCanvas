@@ -69,7 +69,7 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
           <div className="order-2 rounded-3xl border border-slate-200/80 bg-white p-4 dark:border-white/10 dark:bg-white/[0.045] sm:p-6 lg:order-3">
             <h2 className="text-base font-bold text-slate-900 dark:text-white">关于这个函数</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-base sm:leading-7">{config.description}</p>
-            <div className="mt-3 rounded-2xl bg-slate-50 px-4 py-3 dark:bg-black/20 sm:mt-4">
+            <div className="mt-4 hidden rounded-2xl bg-slate-50 px-4 py-3 dark:bg-black/20 sm:block">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Expression</span>
               <code className="mt-1 block overflow-x-auto whitespace-nowrap text-sm font-semibold text-canvas-700 dark:text-canvas-100">{config.expression}</code>
             </div>
