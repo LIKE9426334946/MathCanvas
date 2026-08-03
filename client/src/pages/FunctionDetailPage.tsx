@@ -80,9 +80,9 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
           </div>
         </section>
 
-        <aside className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:p-6 lg:sticky lg:top-24">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-canvas-100 text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100">
+        <aside className="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-soft dark:border-white/10 dark:bg-white/[0.045] sm:p-6 lg:sticky lg:top-24">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-canvas-100 text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100 sm:h-10 sm:w-10 sm:rounded-2xl">
               <SlidersHorizontal size={19} />
             </span>
             <div>
@@ -94,15 +94,15 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
           {config.parameters.length === 0 ? (
             <p className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-black/20 dark:text-slate-400">这个函数没有可调参数。</p>
           ) : (
-            <div className="mt-7 space-y-8">
+            <div className="mt-4 space-y-3 sm:mt-7 sm:space-y-8">
               {config.parameters.map((parameter) => {
                 const value = values[parameter.name] ?? parameter.default;
                 const progress = ((value - parameter.min) / (parameter.max - parameter.min)) * 100;
                 return (
                   <div key={parameter.name}>
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <label htmlFor={`parameter-${parameter.name}`} className="text-lg font-bold text-slate-800 dark:text-slate-100">{parameter.label}</label>
-                      <output className="min-w-20 rounded-xl bg-canvas-50 px-3 py-2 text-center font-mono text-base font-bold tabular-nums text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100">
+                    <div className="mb-1 flex items-center justify-between gap-3 sm:mb-4">
+                      <label htmlFor={`parameter-${parameter.name}`} className="text-base font-bold text-slate-800 dark:text-slate-100 sm:text-lg">{parameter.label}</label>
+                      <output className="min-w-20 rounded-xl bg-canvas-50 px-3 py-1.5 text-center font-mono text-base font-bold tabular-nums text-canvas-700 dark:bg-canvas-500/15 dark:text-canvas-100 sm:py-2">
                         {value.toFixed(decimals(parameter.step))}
                       </output>
                     </div>
@@ -115,9 +115,9 @@ export const FunctionDetailPage = ({ functions, loading, error }: DetailProps) =
                       value={value}
                       onChange={(event) => setValues((current) => ({ ...current, [parameter.name]: Number(event.target.value) }))}
                       style={{ '--range-progress': `${progress}%` } as React.CSSProperties}
-                      className="math-range w-full"
+                      className="math-range block w-full"
                     />
-                    <div className="mt-2 flex justify-between text-xs font-medium tabular-nums text-slate-400">
+                    <div className="flex justify-between text-xs font-medium tabular-nums text-slate-400 sm:mt-2">
                       <span>{parameter.min}</span>
                       <span>{parameter.max}</span>
                     </div>
