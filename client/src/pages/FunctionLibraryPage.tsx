@@ -43,7 +43,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('全部');
   const [directories, setDirectories] = useState<Directory[]>([]);
-  const [mobileDirectory, setMobileDirectory] = useState('');
+  const [mobileDirectory, setMobileDirectory] = useState<string | null>('');
 
   useEffect(() => {
     let active = true;
@@ -98,9 +98,11 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
       .map((name) => ({ name, items: functions.filter((item) => item.category === name) }));
   }, [categories, directories, functions]);
 
-  const activeMobileDirectory = mobileGroups.some((group) => group.name === mobileDirectory)
-    ? mobileDirectory
-    : (mobileGroups[0]?.name ?? '');
+  const activeMobileDirectory = mobileDirectory === null
+    ? null
+    : mobileGroups.some((group) => group.name === mobileDirectory)
+      ? mobileDirectory
+      : (mobileGroups[0]?.name ?? null);
 
   return (
     <main className="overflow-x-hidden pb-20">
@@ -133,7 +135,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
                   <div key={group.name} className="min-w-0">
                     <button
                       type="button"
-                      onClick={() => setMobileDirectory(group.name)}
+                      onClick={() => setMobileDirectory(expanded ? null : group.name)}
                       aria-expanded={expanded}
                       className={`flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl px-3 text-left text-sm font-bold transition-colors ${
                         expanded
