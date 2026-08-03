@@ -46,6 +46,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('全部');
   const [directories, setDirectories] = useState<Directory[]>([]);
+  const [directoriesLoading, setDirectoriesLoading] = useState(true);
   const [mobileDirectory, setMobileDirectory] = useState<string | null>(returnedDirectory);
 
   useEffect(() => {
@@ -66,6 +67,9 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
       })
       .catch(() => {
         // The function categories below remain a complete fallback if this request fails.
+      })
+      .finally(() => {
+        if (active) setDirectoriesLoading(false);
       });
     return () => { active = false; };
   }, []);
@@ -131,7 +135,7 @@ export const FunctionLibraryPage = ({ functions, loading, error }: LibraryProps)
             </div>
           </div>
 
-          {loading ? (
+          {loading || directoriesLoading ? (
             <div className="grid min-h-40 place-items-center text-sm text-slate-400">正在加载函数目录…</div>
           ) : error ? (
             <div className="rounded-2xl border border-dashed border-rose-200 px-4 py-8 text-center text-sm text-rose-500 dark:border-rose-500/20 dark:text-rose-300">{error}</div>
